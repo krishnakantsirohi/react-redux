@@ -209,6 +209,11 @@
         }
         removeItem = (goal) => {
             this.props.store.dispatch(removeGoalAction(goal.id))
+            return API.saveGoal(goal)
+            .catch(()=>{
+                this.props.store.dispatch(addGoalAction(goal));
+                alert('An error occured. Try again.');
+            })
         }
         render() {
             return(
