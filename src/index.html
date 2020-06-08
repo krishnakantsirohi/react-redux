@@ -111,6 +111,17 @@
         }
     }
 
+    function handleToggleTodo(id) {
+        return (dispatch) => {
+            dispatch(toggletodoAction(id));
+            return API.saveTodoToggle(id)
+                .catch(()=>{
+                    dispatch(toggletodoAction(id));
+                    alert('An error occured. Try again.');
+                })
+        }
+    }
+
     function todos(state = [], action) {
         switch (action.type) {
             case ADD_TODO:
@@ -210,12 +221,7 @@
             this.props.store.dispatch(handleDeleteTodo(todo))
         }
         toggleItem = (id) => {
-            this.props.store.dispatch(toggletodoAction(id))
-            return API.saveTodoToggle(id)
-            .catch(()=>{
-                this.props.store.dispatch(toggletodoAction(id));
-                alert('An error occured. Try again.');
-            })
+            this.props.store.dispatch(handleToggleTodo(id))
         }
         render() {
             return(
