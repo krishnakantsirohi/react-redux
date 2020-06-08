@@ -1,17 +1,79 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+function createStore(reducer) {
+    let state;
+    let listeners = []
+    const getState = () => state
+    const subscribe = (listener) => {
+        listeners.push(listener);
+        return () => {
+            listeners = listeners.filter((l)=>l!==listener)
+        }
+    }
+    const dispatch = (action) => {
+        state = reducer(state, action);
+        listeners.forEach((listener)=>listener())
+    }
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+    return{
+        getState,
+        subscribe,
+        dispatch
+    }
+}
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+function todos(state = [], action) {
+    switch (action.type) {
+        case 'ADD_TODO':
+            return state.concat([action.todo]);
+        case 'REMOVE_TODO':
+            return state.filter((f)=>f.id!==action.id)
+        case 'TOGGLE_TODO':
+            return state.map((todo)=>todo.id!==action.id?todo:Object.assign({}, todo, {complete: !todo.complete}));
+        default:
+            return state
+    }
+}
+
+function goals(state=[], action) {
+    switch (action.type) {
+        case 'ADD_GOAL':
+            return state.concat([action.goal]);
+        case 'REMOVE_GOAL':
+            return state.filter((goal)=>goal.id!==action.id);
+        default:
+            return state;
+    }
+}
+
+function app(state={}, action) {
+    return{
+        todos: todos(state.todos, action),
+        goals: goals(state.goals, action),
+    }
+}
+
+const store = createStore(app)
+store.subscribe(()=>{
+    console.log('The new state is: ',store.getState())
+})
+store.dispatch({
+    type: 'ADD_TODO',
+    todo: {
+        id: 0,
+        name: 'Learn Redux',
+        complete: false
+    }
+})
+store.dispatch({
+    type: 'ADD_GOAL',
+    todo: {
+        id: 0,
+        name: 'Learn Redux'
+    }
+})
+store.dispatch({
+    type: 'ADD_TODO',
+    todo: {
+        id: 0,
+        name: 'Lose 20 pounds',
+    }
+})
