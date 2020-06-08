@@ -1,79 +1,76 @@
-function createStore(reducer) {
-    let state;
-    let listeners = []
-    const getState = () => state
-    const subscribe = (listener) => {
-        listeners.push(listener);
-        return () => {
-            listeners = listeners.filter((l)=>l!==listener)
-        }
-    }
-    const dispatch = (action) => {
-        state = reducer(state, action);
-        listeners.forEach((listener)=>listener())
-    }
+var mysql = require('mysql');
 
-    return{
-        getState,
-        subscribe,
-        dispatch
-    }
+var con = mysql.createConnection({
+    host: "localhost",
+    user: "root",
+    password: "1234",
+    database: "react"
+});
+
+con.connect(function(err) {
+    if (err) throw err;
+    console.log("Connected!");
+    return;
+});
+
+function getAllTodos() {
+    let res;
+    con.connect(function (err) {
+        if (err) throw err;
+        con.query("select * from todos", function (err, todos, fields) {
+            if (err) throw err;
+            res = todos;
+        });
+        console.log(res);
+    });
+    return res;
 }
 
-function todos(state = [], action) {
-    switch (action.type) {
-        case 'ADD_TODO':
-            return state.concat([action.todo]);
-        case 'REMOVE_TODO':
-            return state.filter((f)=>f.id!==action.id)
-        case 'TOGGLE_TODO':
-            return state.map((todo)=>todo.id!==action.id?todo:Object.assign({}, todo, {complete: !todo.complete}));
-        default:
-            return state
-    }
+function getAllGoals() {
+    let res;
+    con.connect(function (err) {
+        if (err) throw err;
+        con.query("select * from goals", function (err, todos, fields) {
+            if (err) throw err;
+            res = todos;
+        });
+        console.log(res);
+    });
+    return res;
 }
 
-function goals(state=[], action) {
-    switch (action.type) {
-        case 'ADD_GOAL':
-            return state.concat([action.goal]);
-        case 'REMOVE_GOAL':
-            return state.filter((goal)=>goal.id!==action.id);
-        default:
-            return state;
-    }
+function TogggleTodos(id){
+    let res;
+    con.connect(function (err) {
+        if (err) throw err;
+        con.query("update todos set completed=!completed where id="+id, function (err, todos) {
+            if (err) throw err;
+            res=todos;
+        })
+    })
+    return res;
 }
 
-function app(state={}, action) {
-    return{
-        todos: todos(state.todos, action),
-        goals: goals(state.goals, action),
-    }
+function deleteTodo(id) {
+    let res;
+    con.connect(function (err) {
+        if (err) throw err;
+        con.query("delete from todos where id="+id, function (err, result) {
+            if (err) throw err;
+            res = result;
+        })
+    })
+    return res;
 }
 
-const store = createStore(app)
-store.subscribe(()=>{
-    console.log('The new state is: ',store.getState())
-})
-store.dispatch({
-    type: 'ADD_TODO',
-    todo: {
-        id: 0,
-        name: 'Learn Redux',
-        complete: false
-    }
-})
-store.dispatch({
-    type: 'ADD_GOAL',
-    todo: {
-        id: 0,
-        name: 'Learn Redux'
-    }
-})
-store.dispatch({
-    type: 'ADD_TODO',
-    todo: {
-        id: 0,
-        name: 'Lose 20 pounds',
-    }
-})
+function deleteGoal(id) {
+    let res;
+    con.connect(function (err) {
+        if (err) throw err;
+        con.query("delete from goals where id="+id, function (err, result) {
+            if (err) throw err;
+            res = result;
+        })
+    })
+    return res;
+}
